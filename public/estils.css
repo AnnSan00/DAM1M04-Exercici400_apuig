@@ -25,14 +25,14 @@ body {
   position: absolute;
   width: 100px;
   height: 100px;
-  background-size: 100px 100px; /* tamany exacte */
+  background-size: 100px 100px; 
   background-position: center;
   transition: transform 0.2s ease;
   cursor: pointer;
 }
 
 .buit {
-  /* casilla vacía */
+  /* casilla vacia */
 }
 
 #missatge {
