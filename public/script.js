@@ -6,7 +6,7 @@ const numColumnes = 3;
 const midaCasella = 100;
 
 // Ruta de la imagen
-const imatgePuzzle = "img/image.png"; 
+const imatgePuzzle = "./img/image.png"; 
 
 //-- ESTADO DEL TABLERO --
 let tauler = [
@@ -44,7 +44,7 @@ function init() {
         fitxa.dataset.valor = valor;
 
         // RECORTE DE IMAGEN PARA CADA FICHA:
-
+fitxa.style.backgroundImage = `url('${imatgePuzzle}')`;
         // se pone la imagen completa a cada ficha
         fitxa.style.backgroundSize = `${numColumnes * midaCasella}px ${numFiles * midaCasella}px`;
 
