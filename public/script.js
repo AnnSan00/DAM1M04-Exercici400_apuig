@@ -53,7 +53,9 @@ function init() {
 function trobarBuit() { // Localiza la posición del 0
   for (let f = 0; f < numFiles; f++) {
     for (let c = 0; c < numColumnes; c++) {
-      if (tauler[f][c] === 0) return { fila: f, col: c };
+      if (tauler[f][c] === 0) {
+        return { fila: f, col: c };
+      }
     }
   }
 }
@@ -110,7 +112,8 @@ function barrejarTauler(passos = 80) {
 
     dirs.forEach(d => {
       let nf = buit.fila + d.f, nc = buit.col + d.c;
-      if (nf>=0 && nf<numFiles && nc>=0 && nc<numColumnes) movs.push({f:nf, c:nc});
+      if (nf>=0 && nf<numFiles && nc>=0 && nc<numColumnes) 
+        movs.push({f:nf, c:nc});
     });
 
     const m = movs[Math.floor(Math.random() * movs.length)];
