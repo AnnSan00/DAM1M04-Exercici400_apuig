@@ -1,134 +1,176 @@
 "use strict";
 
-// CONFIGURACIÓN Y ESTADO INICIAL 
+// CONFIGURACIÓN Y ESTADO INICIAL
 const numFiles = 3;
 const numColumnes = 3;
 const midaCasella = 100;
-const imatgePuzzle = "./img/image.png"; 
+const imatgePuzzle = "./img/image.png";
 
-let tauler = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]; // 0 es el hueco
+// Matriz del tablero (0 representa el hueco vacío)
+let tauler = [[1, 2, 3], [4, 5, 6], [7, 8, 0]];
 let moviments = 0;
 
-const taulerDiv = document.getElementById("tauler");
-const moveCounterSpan = document.getElementById("moveCounter");
-const missatgeP = document.getElementById("missatge");
-const resetBtn = document.getElementById("resetBtn");
+// Referencias a los elementos del DOM (Interfaz)
+const refTauler = document.getElementById("tauler");
+const refMoveCounter = document.getElementById("moveCounter");
+const refMissatge = document.getElementById("missatge");
+const refBtnReset = document.getElementById("resetBtn");
 
-// RENDERIZADO: CREACIÓN DEL TABLERO 
+// CREACIÓN DEL TABLERO
 function init() {
-  taulerDiv.innerHTML = ""; 
-  missatgeP.textContent = ""; 
-  moveCounterSpan.textContent = moviments;
+  // Vaciar el contenedor y limpiar textos 
+  refTauler.innerHTML = "";
+  refMissatge.textContent = "";
+  refMoveCounter.textContent = moviments;
 
-  taulerDiv.style.width = `${numColumnes * midaCasella}px`;
-  taulerDiv.style.height = `${numFiles * midaCasella}px`;
+  // Configurar el tamaño del tablero según las dimensiones del juego
+  refTauler.style.width = `${numColumnes * midaCasella}px`;
+  refTauler.style.height = `${numFiles * midaCasella}px`;
 
+  // Recorrer la matriz para crear y posicionar las fichas en el DOM
   for (let fila = 0; fila < numFiles; fila++) {
-    for (let col = 0; col < numColumnes; col++) {
-      const valor = tauler[fila][col];
+    for (let columna = 0; columna < numColumnes; columna++) {
+      const valor = tauler[fila][columna];
 
-      if (valor !== 0) { // Si no es el hueco, creamos la pieza
-        const fitxa = document.createElement("div");
-        fitxa.classList.add("fitxa");
-        fitxa.dataset.valor = valor;
+      // Si el valor no es 0, creamos la pieza visual
+      if (valor !== 0) {
+        const refFitxa = document.createElement("div");
+        refFitxa.classList.add("fitxa");
+        refFitxa.dataset.valor = valor;
 
-        // Estilo de la imagen y recorte (Sprite)
-        fitxa.style.backgroundImage = `url('${imatgePuzzle}')`;
-        fitxa.style.backgroundSize = `300px 300px`;
+        // Estilo de la imagen de fondo y recorte (Sprite)
+        refFitxa.style.backgroundImage = `url('${imatgePuzzle}')`;
+        refFitxa.style.backgroundSize = `${numColumnes * midaCasella}px ${numFiles * midaCasella}px`;
 
-        // Cálculo del recorte según la posición original del número
+        // Calcular qué trozo de la imagen le corresponde según su número original
         const originalCol = (valor - 1) % numColumnes;
         const originalFila = Math.floor((valor - 1) / numColumnes);
-        fitxa.style.backgroundPosition = `-${originalCol * midaCasella}px -${originalFila * midaCasella}px`;
+        refFitxa.style.backgroundPosition = `-${originalCol * midaCasella}px -${originalFila * midaCasella}px`;
 
-        fitxa.addEventListener("click", clicFitxa);
-        fitxa.style.transform = `translate(${col * midaCasella}px, ${fila * midaCasella}px)`;
-        taulerDiv.appendChild(fitxa);
+        // Evento de clic y posicionamiento inicial
+        refFitxa.addEventListener("click", clicFitxa);
+        refFitxa.style.transform = `translate(${columna * midaCasella}px, ${fila * midaCasella}px)`;
+        
+        refTauler.appendChild(refFitxa);
       }
     }
   }
+  
+  // Asignar el evento al botón de reinicio una sola vez
+  refBtnReset.removeEventListener("click", resetJoc); 
+  refBtnReset.addEventListener("click", resetJoc);
 }
 
-//LÓGICA DE MOVIMIENTO
-function trobarBuit() { // Localiza la posición del 0
+// LÓGICA DE MOVIMIENTO
+//Encontrar la posición del hueco vacío (0) 
+function trobarBuit() {
+  // Localiza las coordenadas { fila, columna } del hueco (0)
   for (let f = 0; f < numFiles; f++) {
     for (let c = 0; c < numColumnes; c++) {
       if (tauler[f][c] === 0) {
-        return { fila: f, col: c };
+        return { fila: f, columna: c };
       }
     }
   }
 }
 
+// Manejar el clic en una ficha para intentar moverla
 function clicFitxa(e) {
   const valor = parseInt(e.currentTarget.dataset.valor);
-  let fila, col;
+  let posFitxa = { fila: -1, columna: -1 };
 
-  // Encontrar posición actual de la ficha clicada
+  // Encontrar la posición actual en la matriz de la ficha clicada
   for (let f = 0; f < numFiles; f++) {
     for (let c = 0; c < numColumnes; c++) {
-      if (tauler[f][c] === valor) { fila = f; col = c; }
+      if (tauler[f][c] === valor) {
+        posFitxa.fila = f;
+        posFitxa.columna = c;
+      }
     }
   }
 
+  // Obtener la posición actual del hueco vacio
   const buit = trobarBuit();
-  // Validar si es adyacente (Distancia Manhattan === 1)
-  if (Math.abs(fila - buit.fila) + Math.abs(col - buit.col) === 1) {
-    tauler[buit.fila][buit.col] = valor; // Mover ficha al hueco
-    tauler[fila][col] = 0;               // El lugar de la ficha queda vacío
+
+  // Validar si la ficha está al lado del hueco (Distancia Manhattan === 1)
+  const esAdjacente = Math.abs(posFitxa.fila - buit.fila) + Math.abs(posFitxa.columna - buit.columna) === 1;
+
+  if (esAdjacente) {
+    // Intercambiar valores en la matriz de datos
+    tauler[buit.fila][buit.columna] = valor;
+    tauler[posFitxa.fila][posFitxa.columna] = 0;
+    
     moviments++;
+    
+    // Renderizar los cambios en la pantalla
     actualitzarUI();
-    if (estaResol()) missatgeP.textContent = `Resolt en ${moviments} moviments!`;
+
+    // Comprobar si el jugador ha ganado
+    if (estaResol()) {
+      refMissatge.textContent = `¡Resuelto en ${moviments} movimientos!`;
+    }
   }
 }
 
 // ACTUALIZACIÓN VISUAL Y VICTORIA
 function actualitzarUI() {
-  const fitxes = taulerDiv.querySelectorAll(".fitxa");
-  fitxes.forEach(fitxa => {
-    const valor = parseInt(fitxa.dataset.valor);
+  const refFitxes = refTauler.querySelectorAll(".fitxa");
+
+  // Mover cada elemento HTML a su nueva posición física leyendo la matriz
+  refFitxes.forEach(refFitxa => {
+    const valor = parseInt(refFitxa.dataset.valor);
+    
     for (let f = 0; f < numFiles; f++) {
       for (let c = 0; c < numColumnes; c++) {
         if (tauler[f][c] === valor) {
-          fitxa.style.transform = `translate(${c * midaCasella}px, ${f * midaCasella}px)`;
+          refFitxa.style.transform = `translate(${c * midaCasella}px, ${f * midaCasella}px)`;
         }
       }
     }
   });
-  moveCounterSpan.textContent = moviments;
+
+  // Actualizar el contador del DOM
+  refMoveCounter.textContent = moviments;
 }
 
 function estaResol() {
-  const ok = [[1, 2, 3], [4, 5, 6], [7, 8, 0]];
-  return JSON.stringify(tauler) === JSON.stringify(ok);
+  const estatGuanyador = [[1, 2, 3], [4, 5, 6], [7, 8, 0]];
+  return JSON.stringify(tauler) === JSON.stringify(estatGuanyador);
 }
 
 // MEZCLA Y REINICIO
 function barrejarTauler(passos = 80) {
   for (let i = 0; i < passos; i++) {
     const buit = trobarBuit();
-    const movs = [];
-    const dirs = [{f:-1, c:0}, {f:1, c:0}, {f:0, c:-1}, {f:0, c:1}];
+    const movimentsPossibles = [];
+    const direccions = [{f:-1, c:0}, {f:1, c:0}, {f:0, c:-1}, {f:0, c:1}];
 
-    dirs.forEach(d => {
-      let nf = buit.fila + d.f, nc = buit.col + d.c;
-      if (nf>=0 && nf<numFiles && nc>=0 && nc<numColumnes) 
-        movs.push({f:nf, c:nc});
+    // Buscar qué casillas válidas rodean al hueco
+    direccions.forEach(d => {
+      let novaFila = buit.fila + d.f;
+      let novaColumna = buit.columna + d.c;
+      
+      if (novaFila >= 0 && novaFila < numFiles && novaColumna >= 0 && novaColumna < numColumnes) {
+        movimentsPossibles.push({ fila: novaFila, columna: novaColumna });
+      }
     });
 
-    const m = movs[Math.floor(Math.random() * movs.length)];
-    [tauler[buit.fila][buit.col], tauler[m.f][m.c]] = [tauler[m.f][m.c], tauler[buit.fila][buit.col]];
+    // Elegir un movimiento aleatorio de entre los posibles e intercambiarlo por el hueco
+    const ternaAleatoria = movimentsPossibles[Math.floor(Math.random() * movimentsPossibles.length)];
+    
+    [tauler[buit.fila][buit.columna], tauler[ternaAleatoria.fila][ternaAleatoria.columna]] = 
+    [tauler[ternaAleatoria.fila][ternaAleatoria.columna], tauler[buit.fila][buit.columna]];
   }
 }
 
+//REINICIAR EL JUEGO
 function resetJoc() {
+  // Restaurar el tablero ordenado antes de mezclar
   tauler = [[1, 2, 3], [4, 5, 6], [7, 8, 0]];
   barrejarTauler(80);
   moviments = 0;
   init();
 }
 
-// EVENTOS Y ARRANQUE 
-resetBtn.addEventListener("click", resetJoc);
-init();
+// ARRANQUE DEL JUEGO
 resetJoc();
