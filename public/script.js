@@ -82,7 +82,7 @@ function trobarBuit() {
     }
   }
 }
-
+//MANEJO DE CLICS EN LAS FICHAS
 // Manejar el clic en una ficha para intentar moverla
 function clicFitxa(e) {
   const valorHTML = e.currentTarget.dataset.valor;
@@ -151,7 +151,7 @@ function actualitzarUI() {
   // Actualizar el contador del DOM
   refMoveCounter.textContent = moviments;
 }
-
+//ESTADO DE VICTORIA
 function estaResol() {
   const estatGuanyador = [[1, 2, 3], [4, 5, 6], [7, 8, 0]];
   return JSON.stringify(tauler) === JSON.stringify(estatGuanyador);
