@@ -40,6 +40,7 @@ function init() {
 
         // Estilo de la imagen de fondo y recorte (Sprite)
         refFitxa.style.backgroundImage = `url('${imatgePuzzle}')`;
+        // Configurar el tamaño del fondo para que se ajuste al tamaño total del tablero
         refFitxa.style.backgroundSize = `${numColumnes * midaCasella}px ${numFiles * midaCasella}px`;
 
         // Calcular qué trozo de la imagen le corresponde según su número original
