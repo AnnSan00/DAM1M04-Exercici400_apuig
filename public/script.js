@@ -45,7 +45,8 @@ function init() {
         // Calcular qué trozo de la imagen le corresponde según su número original
         let columnaTemporal = valor - 1;
         let filaTemporal = 0;
-
+        
+        // Ajustar la columna y fila temporal para encontrar la posición correcta en el sprite
         while (columnaTemporal >= numColumnes) {
           columnaTemporal = columnaTemporal - numColumnes;
           filaTemporal = filaTemporal + 1;
@@ -75,6 +76,7 @@ function trobarBuit() {
   for (let f = 0; f < numFiles; f++) {
     for (let c = 0; c < numColumnes; c++) {
       if (tauler[f][c] === 0) {
+        // Devolvemos un objeto con la fila y columna del hueco
         return { fila: f, columna: c };
       }
     }
@@ -103,12 +105,12 @@ function clicFitxa(e) {
   // Validar si la ficha está al lado del hueco
   let difFila = posFitxa.fila - buit.fila;
   let difColumna = posFitxa.columna - buit.columna;
-
+ 
   if (difFila < 0) {
     difFila = -difFila;}
   if (difColumna < 0) {
     difColumna = -difColumna;}
-
+    // La ficha es adyacente al hueco si la suma de las diferencias absolutas es 1
   const esAdjacente = (difFila + difColumna) === 1;
 
   if (esAdjacente) {
@@ -157,6 +159,7 @@ function estaResol() {
 
 // MEZCLA Y REINICIO
 function barrejarTauler(passos = 80) {
+  
   for (let i = 0; i < passos; i++) {
     const buit = trobarBuit();
     const movimentsPossibles = [];
