@@ -43,8 +43,16 @@ function init() {
         refFitxa.style.backgroundSize = `${numColumnes * midaCasella}px ${numFiles * midaCasella}px`;
 
         // Calcular qué trozo de la imagen le corresponde según su número original
-        const originalCol = (valor - 1) % numColumnes;
-        const originalFila = Math.floor((valor - 1) / numColumnes);
+        let columnaTemporal = valor - 1;
+        let filaTemporal = 0;
+
+        while (columnaTemporal >= numColumnes) {
+          columnaTemporal = columnaTemporal - numColumnes;
+          filaTemporal = filaTemporal + 1;
+        }
+
+        const originalCol = columnaTemporal;
+        const originalFila = filaTemporal;
         refFitxa.style.backgroundPosition = `-${originalCol * midaCasella}px -${originalFila * midaCasella}px`;
 
         // Evento de clic y posicionamiento inicial
@@ -62,9 +70,8 @@ function init() {
 }
 
 // LÓGICA DE MOVIMIENTO
-//Encontrar la posición del hueco vacío (0) 
+// Encontrar la posición del hueco vacío (0) 
 function trobarBuit() {
-  // Localiza las coordenadas { fila, columna } del hueco (0)
   for (let f = 0; f < numFiles; f++) {
     for (let c = 0; c < numColumnes; c++) {
       if (tauler[f][c] === 0) {
@@ -76,13 +83,14 @@ function trobarBuit() {
 
 // Manejar el clic en una ficha para intentar moverla
 function clicFitxa(e) {
-  const valor = parseInt(e.currentTarget.dataset.valor);
+  const valorHTML = e.currentTarget.dataset.valor;
   let posFitxa = { fila: -1, columna: -1 };
 
   // Encontrar la posición actual en la matriz de la ficha clicada
   for (let f = 0; f < numFiles; f++) {
     for (let c = 0; c < numColumnes; c++) {
-      if (tauler[f][c] === valor) {
+      // Usamos == para comparar el texto del HTML con el número de la matriz sin romper el código
+      if (tauler[f][c] == valorHTML) {
         posFitxa.fila = f;
         posFitxa.columna = c;
       }
@@ -92,12 +100,20 @@ function clicFitxa(e) {
   // Obtener la posición actual del hueco vacio
   const buit = trobarBuit();
 
-  // Validar si la ficha está al lado del hueco (Distancia Manhattan === 1)
-  const esAdjacente = Math.abs(posFitxa.fila - buit.fila) + Math.abs(posFitxa.columna - buit.columna) === 1;
+  // Validar si la ficha está al lado del hueco
+  let difFila = posFitxa.fila - buit.fila;
+  let difColumna = posFitxa.columna - buit.columna;
+
+  if (difFila < 0) {
+    difFila = -difFila;}
+  if (difColumna < 0) {
+    difColumna = -difColumna;}
+
+  const esAdjacente = (difFila + difColumna) === 1;
 
   if (esAdjacente) {
     // Intercambiar valores en la matriz de datos
-    tauler[buit.fila][buit.columna] = valor;
+    tauler[buit.fila][buit.columna] = tauler[posFitxa.fila][posFitxa.columna];
     tauler[posFitxa.fila][posFitxa.columna] = 0;
     
     moviments++;
@@ -118,11 +134,12 @@ function actualitzarUI() {
 
   // Mover cada elemento HTML a su nueva posición física leyendo la matriz
   refFitxes.forEach(refFitxa => {
-    const valor = parseInt(refFitxa.dataset.valor);
+    const valorHTML = refFitxa.dataset.valor;
     
     for (let f = 0; f < numFiles; f++) {
       for (let c = 0; c < numColumnes; c++) {
-        if (tauler[f][c] === valor) {
+        // Usamos == para comprobar correspondencia directa de caracteres
+        if (tauler[f][c] == valorHTML) {
           refFitxa.style.transform = `translate(${c * midaCasella}px, ${f * midaCasella}px)`;
         }
       }
@@ -155,15 +172,25 @@ function barrejarTauler(passos = 80) {
       }
     });
 
-    // Elegir un movimiento aleatorio de entre los posibles e intercambiarlo por el hueco
-    const ternaAleatoria = movimentsPossibles[Math.floor(Math.random() * movimentsPossibles.length)];
+    // Elegir un movimiento aleatorio de entre los posibles de manera manual
+    let aleatori = Math.random() * movimentsPossibles.length;
+    let indiceAleatorio = 0;
+
+    // Restamos de uno en uno para simular el recorte de decimales de forma manual
+    while (aleatori >= 1) {
+      aleatori = aleatori - 1;
+      indiceAleatorio = indiceAleatorio + 1;
+    }
+
+    const ternaAleatoria = movimentsPossibles[indiceAleatorio];
     
-    [tauler[buit.fila][buit.columna], tauler[ternaAleatoria.fila][ternaAleatoria.columna]] = 
-    [tauler[ternaAleatoria.fila][ternaAleatoria.columna], tauler[buit.fila][buit.columna]];
+    let temporal = tauler[buit.fila][buit.columna];
+    tauler[buit.fila][buit.columna] = tauler[ternaAleatoria.fila][ternaAleatoria.columna];
+    tauler[ternaAleatoria.fila][ternaAleatoria.columna] = temporal;
   }
 }
 
-//REINICIAR EL JUEGO
+// REINICIAR EL JUEGO
 function resetJoc() {
   // Restaurar el tablero ordenado antes de mezclar
   tauler = [[1, 2, 3], [4, 5, 6], [7, 8, 0]];
